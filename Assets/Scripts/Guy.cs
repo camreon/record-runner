@@ -5,14 +5,17 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class Guy : MonoBehaviour
 {
-    public Vector3 jump;
+    public Vector3 jumpDirection;
     public float jumpForce = 2.0f;
     public bool isGrounded;
     Rigidbody rb;
+    ParticleSystem particles;
 
     void Start(){
         rb = GetComponent<Rigidbody>();
-        jump = new Vector3(0.0f, 2.0f, 0.0f);
+        particles = GetComponent<ParticleSystem>();
+
+        jumpDirection = new Vector3(0.0f, 2.0f, 0.0f);
     }
 
     void OnCollisionStay()
@@ -23,20 +26,29 @@ public class Guy : MonoBehaviour
     void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.tag == "Obstacle") {
-            Debug.Log(collision.gameObject);
+            rb.AddTorque(transform.forward * 100000.0f);
 
-            rb.AddTorque(transform.up * jumpForce * 10.0f);
+            particles.Play();
 
-            // rb.constraints = RigidbodyConstraints.None;            
+            Record.instance.Reverse();
         }
     }
 
     void Update()
     {
+        
+    }
+
+    void FixedUpdate()
+    {
         if (Input.GetButtonDown("Jump") && isGrounded) {
-            rb.AddForce(jump * jumpForce, ForceMode.Impulse);
+            rb.AddForce(jumpDirection * jumpForce, ForceMode.Impulse);
             isGrounded = false;
         }
         
+        // TODO: test out 2d spin effect for collisions
+        if (Input.GetButtonDown("Fire1")) {
+            rb.AddTorque(transform.forward * 100000.0f);
+        }
     }
 }
